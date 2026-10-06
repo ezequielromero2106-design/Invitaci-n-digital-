@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benjamín & Tamara | Nuestra Boda</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['"Cormorant Garamond"', 'serif'],
+                        sans: ['"Montserrat"', 'sans-serif'],
+                    },
+                    colors: {
+                        gold: {
+                            DEFAULT: '#b79a68',
+                            light: '#d8c49d',
+                            dark: '#8e7243',
+                        },
+                        dark: '#1c1917',
+                        cream: '#f8f4ed',
+                        paper: '#fffdf9',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+    <style>
+        /* Glassmorphism Classes */
+        .glass-card {
+            background: rgba(255, 253, 249, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(183, 154, 104, 0.25);
+        }
+        
+        .glass-dark {
+            background: rgba(28, 25, 23, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(216, 196, 157, 0.2);
+        }
+
+        /* Animations */
+        @keyframes spinSlow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 12px rgba(183, 154, 104, 0.4); }
+            50% { box-shadow: 0 0 25px rgba(216, 196, 157, 0.8); }
+        }
+
+        .animate-spin-slow {
+            animation: spinSlow 10s linear infinite;
+        }
+
+        .animate-pulse-glow {
+            animation: pulseGlow 3s infinite;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f8f4ed;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #b79a68;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-stone-950 font-sans text-stone-800 antialiased selection:bg-gold-light selection:text-dark">
+
+    <!-- ==========================================
+         PANTALLA DE APERTURA: CARTA INTERACTIVA
+    =========================================== -->
+    <div id="envelopeScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950 transition-all duration-1000 ease-in-out">
+        <div class="relative w-full max-w-sm">
+            <!-- Resplandor ambiental -->
+            <div class="absolute -inset-1 bg-gradient-to-r from-gold/30 via-gold-light/40 to-gold/30 rounded-[36px] blur-xl opacity-75 animate-pulse-glow"></div>
+            
+            <!-- Tarjeta / Sobre de Boda -->
+            <div class="relative bg-stone-900 border border-gold-light/30 rounded-[32px] p-8 text-center text-white shadow-2xl overflow-hidden backdrop-blur-xl">
+                <!-- Marco decorativo interno -->
+                <div class="absolute inset-3 border border-gold/20 rounded-[24px] pointer-events-none"></div>
+
+                <div class="space-y-6 relative z-10 my-4">
+                    <span class="inline-block text-[10px] tracking-[0.4em] uppercase text-gold-light font-semibold border-b border-gold/30 pb-1">
+                        Invitación Especial
+                    </span>
+
+                    <h1 class="font-serif text-4xl text-amber-100 font-medium tracking-wide leading-tight">
+                        Benjamín<br>
+                        <span class="text-2xl text-gold-light font-sans font-light italic">&amp;</span><br>
+                        Tamara
+                    </h1>
+
+                    <p class="text-xs text-stone-400 font-light tracking-widest uppercase">
+                        23 · 11 · 2026
+                    </p>
+
+                    <!-- SELLO DE CERA INTERACTIVO -->
+                    <div class="pt-4">
+                        <button id="openBtn" class="group relative inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-tr from-gold-dark via-gold to-gold-light p-0.5 shadow-xl shadow-gold/20 hover:scale-105 active:scale-95 transition-all duration-300">
+                            <span class="w-full h-full bg-stone-900 rounded-full flex flex-col items-center justify-center gap-1 group-hover:bg-transparent transition-colors duration-300">
+                                <i class="fa-solid fa-envelope-open-text text-xl text-gold-light group-hover:text-stone-900 transition-colors"></i>
+                                <span class="text-[8px] font-semibold tracking-wider text-gold-light uppercase group-hover:text-stone-900">Abrir</span>
+                            </span>
+                        </button>
+                    </div>
+
+                    <p class="text-[11px] text-stone-400 font-light italic pt-2">
+                        Toca el sello para descubrir nuestra tarjeta y música
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==========================================
+         BOTÓN FLOTANTE DE MÚSICA
+    =========================================== -->
+    <button id="musicBtn" aria-label="Control de Música" class="fixed top-5 right-5 z-40 w-12 h-12 rounded-full glass-dark text-gold-light flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 active:scale-95">
+        <i id="musicIcon" class="fa-solid fa-music text-base"></i>
+    </button>
+
+
+    <!-- ==========================================
+         CONTENEDOR PRINCIPAL / CONTENIDO WEB
+    =========================================== -->
+    <main id="mainContent" class="max-w-md mx-auto bg-cream min-h-screen relative shadow-2xl overflow-hidden pb-24 opacity-0 transition-opacity duration-1000">
+
+        <!-- HERO SECTION -->
+        <section id="inicio" class="relative min-h-[90vh] flex items-end justify-center pb-16 px-6 overflow-hidden">
+            <!-- Imagen de fondo con gradiente -->
+            <img src="https://cdn.phototourl.com/member/2026-09-29-659b7eba-742f-4a08-9844-d5132a4a0528.jpg" alt="Benjamín y Tamara" class="absolute inset-0 w-full h-full object-cover object-center scale-105">
+            <div class="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-black/20"></div>
+
+            <div class="relative z-10 text-center text-white space-y-4 w-full">
+                <span class="inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[10px] tracking-[0.3em] uppercase text-gold-light font-medium">
+                    💍 Nos Casamos
+                </span>
+
+                <h1 class="font-serif text-5xl font-normal leading-tight text-amber-50">
+                    Benjamín <br>
+                    <span class="text-3xl text-gold-light italic font-sans">&amp;</span> <br>
+                    Tamara
+                </h1>
+
+                <p class="text-xs tracking-[0.25em] text-stone-300 uppercase pt-2">
+                    23 DE NOVIEMBRE · 13:00 HS
+                </p>
+            </div>
+        </section>
+
+
+        <!-- CUENTA REGRESIVA -->
+        <section id="cuenta" class="px-6 -mt-10 relative z-20">
+            <div class="glass-dark rounded-3xl p-6 text-center text-white shadow-xl border border-gold-light/20">
+                <p class="text-[10px] tracking-[0.3em] uppercase text-gold-light font-semibold mb-4">
+                    Cuenta Regresiva
+                </p>
+
+                <div class="grid grid-cols-4 gap-2 text-center">
+                    <div class="bg-white/5 rounded-2xl p-3 border border-white/10">
+                        <span id="days" class="font-serif text-3xl font-semibold text-amber-100 block">00</span>
+                        <span class="text-[8px] uppercase tracking-wider text-stone-400 mt-1 block">Días</span>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl p-3 border border-white/10">
+                        <span id="hours" class="font-serif text-3xl font-semibold text-amber-100 block">00</span>
+                        <span class="text-[8px] uppercase tracking-wider text-stone-400 mt-1 block">Horas</span>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl p-3 border border-white/10">
+                        <span id="minutes" class="font-serif text-3xl font-semibold text-amber-100 block">00</span>
+                        <span class="text-[8px] uppercase tracking-wider text-stone-400 mt-1 block">Mins</span>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl p-3 border border-white/10">
+                        <span id="seconds" class="font-serif text-3xl font-semibold text-amber-100 block">00</span>
+                        <span class="text-[8px] uppercase tracking-wider text-stone-400 mt-1 block">Segs</span>
+                    </div>
+                </div>
+
+                <p id="countdownMessage" class="font-serif italic text-sm text-gold-light mt-5">
+                    Cada segundo nos acerca a nuestro gran día.
+                </p>
+            </div>
+        </section>
+
+
+        <!-- HISTORIA / FRASE -->
+        <section class="py-16 px-8 text-center">
+            <div class="max-w-xs mx-auto space-y-4">
+                <i class="fa-solid fa-quote-left text-2xl text-gold/40"></i>
+                <p class="font-serif text-2xl italic leading-snug text-stone-800">
+                    “El amor no se trata de encontrar a alguien perfecto, sino de elegir a esa persona una y otra vez.”
+                </p>
+                <div class="w-12 h-[1px] bg-gold mx-auto my-4"></div>
+                <p class="text-xs text-stone-500 font-light leading-relaxed">
+                    Queremos compartir con vos la alegría de dar este paso tan importante en nuestras vidas.
+                </p>
+            </div>
+        </section>
+
+
+        <!-- UBICACIÓN Y CELEBRACIÓN -->
+        <section id="detalles" class="px-6 py-8">
+            <div class="glass-card rounded-3xl p-8 text-center space-y-6 shadow-xl border border-gold/20">
+                <div class="w-16 h-16 rounded-full bg-gold/10 text-gold flex items-center justify-center mx-auto text-2xl">
+                    <i class="fa-solid fa-location-dot"></i>
+                </div>
+
+                <div>
+                    <span class="text-[10px] tracking-[0.3em] uppercase text-gold font-bold">Lugar del Evento</span>
+                    <h2 class="font-serif text-3xl font-medium text-stone-900 mt-1">Celebración</h2>
+                </div>
+
+                <div class="space-y-2 text-stone-600 text-xs leading-relaxed">
+                    <p class="font-semibold text-stone-800">Lunes 23 de Noviembre de 2026 · 13:00 HS</p>
+                    <p>Calle Tumusla 667</p>
+                    <p>San Salvador de Jujuy (Barrio Luján)</p>
+                </div>
+
+                <a href="https://maps.app.goo.gl/dwJBQgKS7bYMZBuv8" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-stone-900 text-white text-xs font-semibold tracking-wider uppercase shadow-md hover:bg-gold transition-colors duration-300 w-full">
+                    <i class="fa-solid fa-map-location-dot text-gold"></i>
+                    Cómo llegar con GPS
+                </a>
+            </div>
+        </section>
+
+
+        <!-- FOTO DE ANILLOS -->
+        <section class="px-6 py-4">
+            <div class="rounded-3xl overflow-hidden shadow-lg border border-gold/20">
+                <img src="https://cdn.phototourl.com/member/2026-09-29-31f79651-0ed4-4602-abfc-b7e1c0738629.jpg" alt="Anillos de boda" class="w-full h-64 object-cover">
+            </div>
+        </section>
+
+
+        <!-- CRONOGRAMA -->
+        <section class="px-6 py-12">
+            <div class="text-center mb-8">
+                <span class="text-[10px] tracking-[0.3em] uppercase text-gold font-bold">Itinerario</span>
+                <h2 class="font-serif text-3xl font-medium text-stone-900">Cronograma</h2>
+            </div>
+
+            <div class="space-y-6 relative before:absolute before:inset-0 before:left-1/2 before:-ml-px before:w-0.5 before:bg-gold/30">
+                <!-- Item 1 -->
+                <div class="relative flex items-center justify-between group">
+                    <div class="w-1/2 pr-6 text-right">
+                        <h3 class="font-serif text-lg font-bold text-stone-800">13:00 HS</h3>
+                        <p class="text-xs text-stone-500">Bienvenida &amp; Recepción</p>
+                    </div>
+                    <div class="absolute left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-stone-900 border-2 border-gold text-gold flex items-center justify-center text-xs shadow">
+                        <i class="fa-solid fa-champagne-glasses"></i>
+                    </div>
+                    <div class="w-1/2 pl-6"></div>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="relative flex items-center justify-between group">
+                    <div class="w-1/2 pr-6"></div>
+                    <div class="absolute left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-stone-900 border-2 border-gold text-gold flex items-center justify-center text-xs shadow">
+                        <i class="fa-solid fa-ring"></i>
+                    </div>
+                    <div class="w-1/2 pl-6 text-left">
+                        <h3 class="font-serif text-lg font-bold text-stone-800">14:00 HS</h3>
+                        <p class="text-xs text-stone-500">Ceremonia &amp; Brindis</p>
+                    </div>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="relative flex items-center justify-between group">
+                    <div class="w-1/2 pr-6 text-right">
+                        <h3 class="font-serif text-lg font-bold text-stone-800">15:30 HS</h3>
+                        <p class="text-xs text-stone-500">Almuerzo &amp; Fiesta</p>
+                    </div>
+                    <div class="absolute left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-stone-900 border-2 border-gold text-gold flex items-center justify-center text-xs shadow">
+                        <i class="fa-solid fa-music"></i>
+                    </div>
+                    <div class="w-1/2 pl-6"></div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- MESA DE REGALOS -->
+        <section id="regalos" class="px-6 py-8">
+            <div class="glass-card rounded-3xl p-8 text-center space-y-6 shadow-xl border border-gold/20">
+                <div class="w-16 h-16 rounded-full bg-gold/10 text-gold flex items-center justify-center mx-auto text-2xl">
+                    <i class="fa-solid fa-gift"></i>
+                </div>
+
+                <div>
+                    <span class="text-[10px] tracking-[0.3em] uppercase text-gold font-bold">Mesa de Regalos</span>
+                    <h2 class="font-serif text-3xl font-medium text-stone-900 mt-1">Presentes</h2>
+                </div>
+
+                <p class="text-xs text-stone-600 leading-relaxed max-w-xs mx-auto">
+                    Tu presencia es nuestro mejor regalo. Si deseás hacernos un obsequio, podés colaborar con nuestra luna de miel.
+                </p>
+
+                <div class="bg-white p-4 rounded-2xl border border-dashed border-gold text-center space-y-1">
+                    <span class="text-[10px] uppercase tracking-widest text-stone-400 block">Alias de Transferencia</span>
+                    <p id="aliasText" class="font-semibold text-lg text-stone-900 tracking-wide">benja.boda</p>
+                    <p class="text-[11px] text-stone-500">Banco Galicia</p>
+                </div>
+
+                <button id="copyBtn" class="w-full py-3.5 rounded-full bg-gold text-white text-xs font-semibold tracking-wider uppercase shadow-md hover:bg-gold-dark transition-colors duration-300 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-copy"></i>
+                    <span id="copyBtnText">Copiar Alias</span>
+                </button>
+            </div>
+        </section>
+
+
+        <!-- FORMULARIO RSVP / WHATSAPP -->
+        <section id="confirmar" class="px-6 py-8">
+            <div class="glass-dark rounded-3xl p-8 text-white space-y-6 shadow-2xl border border-gold-light/20">
+                <div class="text-center space-y-1">
+                    <span class="text-[10px] tracking-[0.3em] uppercase text-gold-light font-bold">Confirmación</span>
+                    <h2 class="font-serif text-3xl font-medium text-amber-100">¿Nos Acompañás?</h2>
+                    <p class="text-xs text-stone-400 font-light pt-1">
+                        Por favor confirmá tu asistencia antes del evento.
+                    </p>
+                </div>
+
+                <form id="rsvpForm" class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-wider text-stone-300 mb-1">Nombre y Apellido</label>
+                        <input type="text" id="nombre" required placeholder="Escribí tu nombre completo" class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-stone-400 text-xs focus:outline-none focus:border-gold-light">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-wider text-stone-300 mb-1">¿Asistirás?</label>
+                        <select id="asistencia" required class="w-full px-4 py-3 rounded-xl bg-stone-900 border border-white/20 text-white text-xs focus:outline-none focus:border-gold-light">
+                            <option value="">Seleccionar opción</option>
+                            <option value="Sí, con gusto asistiré">Sí, asistiré con gusto</option>
+                            <option value="No podré asistir">Lamentablemente no podré asistir</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-wider text-stone-300 mb-1">Acompañantes</label>
+                        <select id="acompanantes" class="w-full px-4 py-3 rounded-xl bg-stone-900 border border-white/20 text-white text-xs focus:outline-none focus:border-gold-light">
+                            <option value="0">Voy solo/a</option>
+                            <option value="1">1 Acompañante</option>
+                            <option value="2">2 Acompañantes</option>
+                            <option value="3">3 Acompañantes</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-wider text-stone-300 mb-1">Mensaje para los novios</label>
+                        <textarea id="mensaje" rows="3" placeholder="Dejanos unas palabras especiales..." class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-stone-400 text-xs focus:outline-none focus:border-gold-light"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full py-4 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold tracking-wider uppercase shadow-lg transition-colors duration-300 flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-whatsapp text-lg"></i>
+                        Confirmar por WhatsApp
+                    </button>
+                </form>
+            </div>
+        </section>
+
+
+        <!-- CIERRE Y AGRADECIMIENTO -->
+        <section class="py-16 text-center px-6 space-y-4">
+            <h2 class="font-serif text-4xl text-stone-900 font-normal">Benjamín &amp; Tamara</h2>
+            <p class="text-xs text-gold uppercase tracking-[0.3em]">23 · 11 · 2026</p>
+            <p class="text-xs text-stone-500 font-serif italic">¡Esperamos celebrar juntos!</p>
+        </section>
+
+    </main>
+
+
+    <!-- ==========================================
+         BARRA DE NAVEGACIÓN INFERIOR FLOTANTE
+    =========================================== -->
+    <nav class="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[90%] max-w-sm glass-dark rounded-full p-2 border border-gold-light/20 shadow-2xl flex items-center justify-around text-stone-300">
+        <a href="#inicio" class="flex flex-col items-center gap-1 text-[9px] uppercase tracking-wider hover:text-gold-light transition-colors">
+            <i class="fa-solid fa-heart text-sm"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="#cuenta" class="flex flex-col items-center gap-1 text-[9px] uppercase tracking-wider hover:text-gold-light transition-colors">
+            <i class="fa-solid fa-clock text-sm"></i>
+            <span>Cuenta</span>
+        </a>
+        <a href="#detalles" class="flex flex-col items-center gap-1 text-[9px] uppercase tracking-wider hover:text-gold-light transition-colors">
+            <i class="fa-solid fa-location-dot text-sm"></i>
+            <span>Lugar</span>
+        </a>
+        <a href="#regalos" class="flex flex-col items-center gap-1 text-[9px] uppercase tracking-wider hover:text-gold-light transition-colors">
+            <i class="fa-solid fa-gift text-sm"></i>
+            <span>Regalos</span>
+        </a>
+        <a href="#confirmar" class="flex flex-col items-center gap-1 text-[9px] uppercase tracking-wider hover:text-gold-light transition-colors">
+            <i class="fa-solid fa-check-to-slot text-sm"></i>
+            <span>RSVP</span>
+        </a>
+    </nav>
+
+
+    <!-- ==========================================
+         LÓGICA JAVASCRIPT VANILLA
+    =========================================== -->
+    <script>
+        // CONFIGURACIÓN GENERAL
+        const CONFIG = {
+            fechaEvento: "2026-11-23T13:00:00-03:00",
+            whatsapp: "3884864209",
+            alias: "benja.boda",
+            audioUrl: "https://files.catbox.moe/wnh9a0.mp3"
+        };
+
+        // REPRODUCTOR DE MÚSICA
+        const audio = new Audio(CONFIG.audioUrl);
+        audio.loop = true;
+        let isPlaying = false;
+
+        const musicBtn = document.getElementById('musicBtn');
+        const musicIcon = document.getElementById('musicIcon');
+
+        function toggleMusic() {
+            if (isPlaying) {
+                audio.pause();
+                isPlaying = false;
+                musicIcon.className = "fa-solid fa-music text-base";
+                musicBtn.classList.remove('animate-spin-slow', 'border-gold');
+            } else {
+                audio.play().then(() => {
+                    isPlaying = true;
+                    musicIcon.className = "fa-solid fa-compact-disc text-base text-gold-light";
+                    musicBtn.classList.add('animate-spin-slow', 'border-gold');
+                }).catch(e => console.log("Autoplay bloquado:", e));
+            }
+        }
+
+        musicBtn.addEventListener('click', toggleMusic);
+
+
+        // APERTURA DE LA CARTA
+        const openBtn = document.getElementById('openBtn');
+        const envelopeScreen = document.getElementById('envelopeScreen');
+        const mainContent = document.getElementById('mainContent');
+
+        openBtn.addEventListener('click', () => {
+            // Reproducir música
+            toggleMusic();
+
+            // Disparar confeti sofisticado
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 70,
+                    spread: 80,
+                    origin: { y: 0.6 },
+                    colors: ['#b79a68', '#d8c49d', '#ffffff', '#e2e8f0']
+                });
+            }
+
+            // Ocultar sobre y mostrar invitación con animación
+            envelopeScreen.classList.add('opacity-0', 'pointer-events-none', '-translate-y-full');
+            mainContent.classList.remove('opacity-0');
+            mainContent.classList.add('opacity-100');
+        });
+
+
+        // CUENTA REGRESIVA
+        const targetDate = new Date(CONFIG.fechaEvento).getTime();
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const diff = targetDate - now;
+
+            const daysEl = document.getElementById('days');
+            const hoursEl = document.getElementById('hours');
+            const minutesEl = document.getElementById('minutes');
+            const secondsEl = document.getElementById('seconds');
+            const msgEl = document.getElementById('countdownMessage');
+
+            if (diff <= 0) {
+                daysEl.textContent = "00";
+                hoursEl.textContent = "00";
+                minutesEl.textContent = "00";
+                secondsEl.textContent = "00";
+                msgEl.textContent = "¡Hoy es el gran día! 💍✨";
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            daysEl.textContent = String(days).padStart(2, '0');
+            hoursEl.textContent = String(hours).padStart(2, '0');
+            minutesEl.textContent = String(minutes).padStart(2, '0');
+            secondsEl.textContent = String(seconds).padStart(2, '0');
+        }
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+
+        // COPIAR ALIAS AL PORTAPAPELES
+        const copyBtn = document.getElementById('copyBtn');
+        const copyBtnText = document.getElementById('copyBtnText');
+
+        copyBtn.addEventListener('click', async () => {
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(CONFIG.alias);
+                } else {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = CONFIG.alias;
+                    textarea.style.position = 'fixed';
+                    textarea.style.opacity = '0';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                }
+                copyBtnText.textContent = "¡Alias Copiado! ✓";
+                setTimeout(() => {
+                    copyBtnText.textContent = "Copiar Alias";
+                }, 3000);
+            } catch (err) {
+                alert("Alias: " + CONFIG.alias);
+            }
+        });
+
+
+        // FORMULARIO RSVP A WHATSAPP
+        const rsvpForm = document.getElementById('rsvpForm');
+
+        rsvpForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const nombre = document.getElementById('nombre').value.trim();
+            const asistencia = document.getElementById('asistencia').value;
+            const acompanantes = document.getElementById('acompanantes').value;
+            const mensaje = document.getElementById('mensaje').value.trim();
+
+            let text = `💍 *CONFIRMACIÓN DE BODA*\n\n`;
+            text += `Hola Benjamín y Tamara!\n\n`;
+            text += `👤 *Nombre:* ${nombre}\n`;
+            text += `✨ *Asistencia:* ${asistencia}\n`;
+            text += `👥 *Acompañantes:* ${acompanantes}\n`;
+            
+            if (mensaje) {
+                text += `💬 *Mensaje:* ${mensaje}\n`;
+            }
+
+            text += `\n📅 *Fecha:* 23/11/2026 - 13:00 HS`;
+
+            const url = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        });
+    </script>
+</body>
+</html>
